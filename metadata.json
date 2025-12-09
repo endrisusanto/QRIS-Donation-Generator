@@ -1,0 +1,5 @@
+{
+  "name": "QRIS Donation Generator",
+  "description": "A dynamic QRIS generator for donations and tips, inspired by the Wimboro/qris logic.",
+  "requestFramePermissions": []
+}
