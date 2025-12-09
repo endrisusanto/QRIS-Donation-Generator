@@ -1,0 +1,9 @@
+CONTAINER ID   IMAGE                              COMMAND                  CREATED          STATUS          PORTS                                               NAMES
+59b48c791436   dompetkeluarga-app                 "/docker-entrypoint.…"   11 seconds ago   Up 3 seconds    0.0.0.0:1212->80/tcp, [::]:1212->80/tcp             dompetkeluarga-app-1
+9af221572d14   dhl-express-tracker-app            "docker-php-entrypoi…"   11 seconds ago   Up 5 seconds    9000/tcp, 0.0.0.0:8800->80/tcp, [::]:8800->80/tcp   dhl-tracker-app
+e7b9b718d138   dompetkeluarga-server              "docker-entrypoint.s…"   17 seconds ago   Up 5 seconds    0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp         dompetkeluarga-server-1
+47633eb7d9d9   mariadb:10.6                       "docker-entrypoint.s…"   18 seconds ago   Up 7 seconds    3306/tcp                                            dhl-tracker-db
+2b32a3eb3dbe   postgres:15-alpine                 "docker-entrypoint.s…"   31 seconds ago   Up 7 seconds    0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp         dompetkeluarga-db-1
+6b44fcee7792   qris-qris-app                      "/docker-entrypoint.…"   45 seconds ago   Up 21 seconds   0.0.0.0:6699->80/tcp, [::]:6699->80/tcp             qris-generator
+a48186f89383   docker.n8n.io/n8nio/n8n            "tini -- /docker-ent…"   2 minutes ago    Up 2 minutes    0.0.0.0:5678->5678/tcp, [::]:5678->5678/tcp         n8n-n8n-1
+14e5a93e6989   qris-donation-generator-qris-app   "/docker-entrypoint.…"   8 minutes ago    Up 8 minutes    0.0.0.0:5656->80/tcp, [::]:5656->80/tcp             qris-donation-generator-qris-app-1

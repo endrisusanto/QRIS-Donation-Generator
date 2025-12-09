@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  qris-app:
+    build: .
+    ports:
+      - "5656:80"
+    restart: always

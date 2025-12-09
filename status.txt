@@ -1,0 +1,2 @@
+CONTAINER ID   IMAGE                              COMMAND                  CREATED         STATUS         PORTS                                     NAMES
+14e5a93e6989   qris-donation-generator-qris-app   "/docker-entrypoint.…"   3 minutes ago   Up 3 minutes   0.0.0.0:5656->80/tcp, [::]:5656->80/tcp   qris-donation-generator-qris-app-1
