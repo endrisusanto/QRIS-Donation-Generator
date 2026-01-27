@@ -16,6 +16,7 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [qrExpiresAt, setQrExpiresAt] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [hasDonations, setHasDonations] = useState<boolean>(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   // Load config from local storage on mount
@@ -144,10 +145,10 @@ const App: React.FC = () => {
   if (generatedQR) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
-        {/* Main Content - Side by side on desktop */}
-        <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6">
-          {/* Left Side - QR Card */}
-          <div className="flex-1">
+        {/* Main Content - Dynamically centered or side-by-side */}
+        <div className={`w-full max-w-6xl flex flex-col gap-6 ${hasDonations ? 'lg:flex-row' : 'lg:items-center'}`}>
+          {/* QR Card */}
+          <div className={`w-full ${hasDonations ? 'lg:flex-1' : 'lg:max-w-md'}`}>
             <div className="w-full bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="p-8 flex flex-col items-center text-center space-y-6">
 
@@ -171,7 +172,10 @@ const App: React.FC = () => {
                   )}
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200" ref={qrRef}>
+                <div
+                  className={`bg-white p-4 rounded-2xl shadow-sm border border-gray-200 transition-all duration-500 ${timeRemaining === 0 ? 'blur-md opacity-50' : ''}`}
+                  ref={qrRef}
+                >
                   <QRCodeSVG
                     value={generatedQR}
                     size={220}
@@ -181,11 +185,13 @@ const App: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex gap-4 text-sm text-gray-500">
-                  <button onClick={downloadQR} className="hover:text-blue-600 flex items-center gap-1 transition-colors">
-                    <ArrowDownTrayIcon className="h-4 w-4" /> Simpan Gambar
-                  </button>
-                </div>
+                {timeRemaining > 0 && (
+                  <div className="flex gap-4 text-sm text-gray-500">
+                    <button onClick={downloadQR} className="hover:text-blue-600 flex items-center gap-1 transition-colors">
+                      <ArrowDownTrayIcon className="h-4 w-4" /> Simpan Gambar
+                    </button>
+                  </div>
+                )}
 
                 <div className="w-full text-left bg-gray-50 rounded-xl p-5 border border-gray-100">
                   <h3 className="font-semibold text-gray-900 mb-3 text-sm">Cara Pembayaran:</h3>
@@ -220,14 +226,16 @@ const App: React.FC = () => {
           </div>
 
           {/* Right Side - Recent Donations (Desktop) */}
-          <div className="hidden lg:block lg:w-96">
-            <RecentDonations />
-          </div>
+          {hasDonations && (
+            <div className="hidden lg:block lg:w-96">
+              <RecentDonations onDonationsChange={setHasDonations} />
+            </div>
+          )}
         </div>
 
         {/* Recent Donations (Mobile) */}
         <div className="w-full max-w-6xl lg:hidden mt-8">
-          <RecentDonations />
+          <RecentDonations onDonationsChange={setHasDonations} />
         </div>
       </div>
     );
@@ -237,25 +245,27 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-8 px-4 sm:px-6 lg:px-8">
 
-      {/* Header */}
-      <div className="w-full max-w-6xl flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">QRIS Donasi</h1>
-          <p className="text-sm text-gray-500">Buat kode QRIS dengan nominal kustom</p>
+      {/* Header - Dynamic width matching card */}
+      <div className={`w-full flex flex-col gap-6 mb-6 ${hasDonations ? 'max-w-6xl' : 'max-w-6xl lg:items-center'}`}>
+        <div className={`w-full ${hasDonations ? '' : 'lg:max-w-md'} flex justify-between items-center`}>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">QRIS Donasi</h1>
+            <p className="text-sm text-gray-500">Buat kode QRIS dengan nominal kustom</p>
+          </div>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
+            title="Pengaturan QRIS"
+          >
+            <Cog6ToothIcon className="h-6 w-6" />
+          </button>
         </div>
-        <button
-          onClick={() => setIsSettingsOpen(true)}
-          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
-          title="Pengaturan QRIS"
-        >
-          <Cog6ToothIcon className="h-6 w-6" />
-        </button>
       </div>
 
-      {/* Main Content - Side by side on desktop */}
-      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-6">
-        {/* Left Side - Main Form */}
-        <div className="flex-1">
+      {/* Main Content - Dynamically centered or side-by-side */}
+      <div className={`w-full max-w-6xl flex flex-col gap-6 ${hasDonations ? 'lg:flex-row' : 'lg:items-center'}`}>
+        {/* Main Form */}
+        <div className={`w-full ${hasDonations ? 'lg:flex-1' : 'lg:max-w-md'}`}>
           {/* Main Card */}
           <div className="w-full bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
 
@@ -350,7 +360,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer Message - Desktop only */}
+          {/* Footer Message - Mobile only */}
           <div className="mt-6 text-center space-y-2 lg:hidden">
             <p className="text-gray-500 font-medium">Terima kasih atas dukungan Anda 🙏</p>
             <p className="text-xs text-gray-400">Pastikan nama merchant sesuai saat melakukan pembayaran.</p>
@@ -358,14 +368,16 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Side - Recent Donations (Desktop) */}
-        <div className="hidden lg:block lg:w-96">
-          <RecentDonations />
-        </div>
+        {hasDonations && (
+          <div className="hidden lg:block lg:w-96">
+            <RecentDonations onDonationsChange={setHasDonations} />
+          </div>
+        )}
       </div>
 
       {/* Recent Donations (Mobile) */}
       <div className="w-full max-w-6xl lg:hidden mt-8">
-        <RecentDonations />
+        <RecentDonations onDonationsChange={setHasDonations} />
       </div>
 
       {/* Footer Message */}

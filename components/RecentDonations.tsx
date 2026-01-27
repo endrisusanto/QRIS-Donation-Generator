@@ -11,7 +11,11 @@ interface Donation {
     created_at: string;
 }
 
-const RecentDonations: React.FC = () => {
+interface RecentDonationsProps {
+    onDonationsChange?: (hasDonations: boolean) => void;
+}
+
+const RecentDonations: React.FC<RecentDonationsProps> = ({ onDonationsChange }) => {
     const [donations, setDonations] = useState<Donation[]>([]);
     const [loading, setLoading] = useState(true);
     const [newDonation, setNewDonation] = useState<Donation | null>(null);
@@ -111,6 +115,13 @@ const RecentDonations: React.FC = () => {
         const interval = setInterval(fetchDonations, 5000);
         return () => clearInterval(interval);
     }, []);
+
+    // Notify parent about donations status
+    useEffect(() => {
+        if (onDonationsChange) {
+            onDonationsChange(donations.length > 0 && !loading);
+        }
+    }, [donations.length, loading, onDonationsChange]);
 
     if (loading && donations.length === 0) {
         return (
