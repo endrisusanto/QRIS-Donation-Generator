@@ -1,0 +1,31 @@
+
+ ⛅️ wrangler 4.33.2 (update available 4.60.0)
+─────────────────────────────────────────────
+Getting User settings...
+👋 You are logged in with an OAuth Token, associated with the email endrisusantosekarang@gmail.com.
+┌───────────────┬──────────────────────────────────┐
+│ Account Name  │ Account ID                       │
+├───────────────┼──────────────────────────────────┤
+│ Endri Susanto │ 5ee9316b3c67227a543f754f22bd1c22 │
+└───────────────┴──────────────────────────────────┘
+🔓 Token Permissions:
+Scope (Access)
+- account (read)
+- user (read)
+- workers (write)
+- workers_kv (write)
+- workers_routes (write)
+- workers_scripts (write)
+- workers_tail (read)
+- d1 (write)
+- pages (write)
+- zone (read)
+- ssl_certs (write)
+- ai (write)
+- queues (write)
+- pipelines (write)
+- secrets_store (write)
+- containers (write)
+- cloudchamber (write)
+- connectivity (admin)
+- offline_access 

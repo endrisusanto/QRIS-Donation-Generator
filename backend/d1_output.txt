@@ -1,0 +1,8 @@
+
+ ⛅️ wrangler 4.33.2 (update available 4.60.0)
+─────────────────────────────────────────────
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mA database with that name already exists[0m
+
+
+🪵  Logs were written to "/home/endrisusanto/.config/.wrangler/logs/wrangler-2026-01-27_04-08-58_955.log"

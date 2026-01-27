@@ -1,0 +1,30 @@
+
+> notification-listener-backend@1.0.0 cf:deploy
+> wrangler deploy
+
+
+ ⛅️ wrangler 4.33.2 (update available 4.60.0)
+─────────────────────────────────────────────
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Unexpected fields found in d1_databases[0] field: "routes"
+
+
+Total Upload: 10.68 KiB / gzip: 2.60 KiB
+Your Worker has access to the following bindings:
+Binding                                Resource         
+env.DB (notification-listener-db)      D1 Database      
+
+Uploaded notification-listener-backend (9.85 sec)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mYou need to register a workers.dev subdomain before publishing to workers.dev[0m
+
+
+? Would you like to register a workers.dev subdomain now?
+🤖 Using fallback value in non-interactive context: no
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mYou can either deploy your worker to one or more routes by specifying them in your wrangler.toml file, or register a workers.dev subdomain here:[0m
+
+  [4mhttps://dash.cloudflare.com/5ee9316b3c67227a543f754f22bd1c22/workers/onboarding[0m
+
+
+🪵  Logs were written to "/home/endrisusanto/.config/.wrangler/logs/wrangler-2026-01-27_04-17-12_284.log"

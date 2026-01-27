@@ -1,0 +1,33 @@
+🚀 Cloudflare Workers Deployment Test
+======================================
+Please enter your API key (press Enter to skip for health check only):
+
+Testing with Worker URL: https://notification-listener-backend.endri-susanto.workers.dev
+======================================
+[1;33mℹ️  Testing GET /health[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"status":"OK","timestamp":"2026-01-27T04:29:05.306Z","platform":"Cloudflare Workers"}
+----------------------------------------
+[1;33mℹ️  Testing POST /webhook[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"success":true,"message":"Notification received successfully","id":2,"timestamp":"2026-01-27T04:29:05.689Z"}
+----------------------------------------
+[1;33mℹ️  Testing POST /test[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"success":true,"message":"Test notification received successfully","timestamp":"2026-01-27T04:29:06.785Z","data":{"deviceId":"test-device-123","packageName":"com.example.test","appName":"Test App","title":"Test Notification","text":"This is a test notification","amountDetected":"50000"}}
+----------------------------------------
+[1;33mℹ️  Testing GET /notifications[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"success":true,"data":[{"id":2,"device_id":"test-device-123","package_name":"com.example.test","app_name":"Test App","posted_at":null,"title":"Test Notification","text":"This is a test notification","sub_text":null,"big_text":null,"channel_id":null,"notification_id":null,"amount_detected":"50000","extras":null,"created_at":"2026-01-27 04:29:05"},{"id":1,"device_id":"test-device-123","package_name":"com.example.test","app_name":"Test App","posted_at":null,"title":"Test Notification","text":"This is a test notification","sub_text":null,"big_text":null,"channel_id":null,"notification_id":null,"amount_detected":"50000","extras":null,"created_at":"2026-01-27 04:28:58"}],"count":2}
+----------------------------------------
+[1;33mℹ️  Testing GET /devices[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"success":true,"data":[{"id":2,"device_id":"test-device-123","last_seen":"2026-01-27T04:29:05.689Z","total_notifications":2,"created_at":"2026-01-27 04:29:05"}],"count":1}
+----------------------------------------
+[1;33mℹ️  Testing GET /stats[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"success":true,"data":{"totalNotifications":2,"totalDevices":1,"notificationsToday":2,"topApps":[{"package_name":"com.example.test","app_name":"Test App","count":2}]}}
+----------------------------------------
+[0;32m✅ All tests completed![0m
+======================================
+🎉 Testing completed!

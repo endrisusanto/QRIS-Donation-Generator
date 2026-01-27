@@ -1,0 +1,13 @@
+
+> notification-listener-backend@1.0.0 cf:deploy
+> wrangler deploy
+
+
+ ⛅️ wrangler 4.33.2 (update available 4.60.0)
+─────────────────────────────────────────────
+Total Upload: 10.68 KiB / gzip: 2.60 KiB
+Your Worker has access to the following bindings:
+Binding                                Resource         
+env.DB (notification-listener-db)      D1 Database      
+
+Uploaded notification-listener-backend (8.26 sec)

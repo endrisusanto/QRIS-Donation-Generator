@@ -1,0 +1,14 @@
+
+> notification-listener-backend@1.0.0 cf:deploy
+> wrangler deploy
+
+
+ ⛅️ wrangler 4.33.2 (update available 4.60.0)
+─────────────────────────────────────────────
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mProcessing wrangler.toml configuration:[0m
+
+    - Expected "routes" to be an array but got {"pattern":"donasi.endrisusanto.my.id","custom_domain":true}.
+
+
+🪵  Logs were written to "/home/endrisusanto/.config/.wrangler/logs/wrangler-2026-01-27_04-16-46_558.log"

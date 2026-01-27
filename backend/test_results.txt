@@ -1,0 +1,14 @@
+🚀 Cloudflare Workers Deployment Test
+======================================
+Please enter your API key (press Enter to skip for health check only):
+API Key: 
+Testing with Worker URL: https://notification-listener-backend.endri-susanto.workers.dev
+======================================
+[1;33mℹ️  Testing GET /health[0m
+[0;32m✅ Status: 200 (Expected: 200)[0m
+Response: {"status":"OK","timestamp":"2026-01-27T04:28:48.264Z","platform":"Cloudflare Workers"}
+----------------------------------------
+[1;33mℹ️  Skipping authenticated endpoints (no API key provided)[0m
+[1;33mℹ️  To test all endpoints, run the script again with your API key[0m
+======================================
+🎉 Testing completed!
