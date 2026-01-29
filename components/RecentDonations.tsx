@@ -77,11 +77,11 @@ const RecentDonations: React.FC<RecentDonationsProps> = ({ donations, loading, o
 
                                             {/* GIF (if exists) */}
                                             {d.gifUrl && (
-                                                <div className="rounded-xl overflow-hidden mb-2 border border-gray-100 max-w-[200px]">
+                                                <div className="rounded-xl overflow-hidden mb-2 border border-gray-100 w-full sm:w-auto sm:max-w-[200px]">
                                                     <img
                                                         src={d.gifUrl}
                                                         alt="GIF"
-                                                        className="w-full h-auto max-h-32 object-contain bg-gray-50"
+                                                        className="w-full h-auto max-h-48 sm:max-h-32 object-cover sm:object-contain bg-gray-50 block"
                                                     />
                                                 </div>
                                             )}
