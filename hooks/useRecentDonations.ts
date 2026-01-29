@@ -1,22 +1,28 @@
 import { useState, useEffect, useRef } from 'react';
 import { Donation } from '../types';
 
+// Create audio instance OUTSIDE component to prevent recreation
+const successAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
+successAudio.preload = 'auto';
+
 export const useRecentDonations = () => {
     const [donations, setDonations] = useState<Donation[]>([]);
     const [loading, setLoading] = useState(true);
     const [newDonation, setNewDonation] = useState<Donation | null>(null);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
     const lastIdRef = useRef<number>(0);
 
-    // Initialize audio
-    useEffect(() => {
-        audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3'); // Success chime sound
-    }, []);
-
     const playSuccessSound = () => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+        successAudio.currentTime = 0;
+        const playPromise = successAudio.play();
+
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    console.log('🔊 Success sound played');
+                })
+                .catch(e => {
+                    console.log('⚠️ Audio play failed:', e.message);
+                });
         }
     };
 
@@ -65,50 +71,82 @@ export const useRecentDonations = () => {
                             // Match by amount and time (donation must be after QR generation)
                             const amountMatch = donationAmount === sessionAmount;
                             const timeDiff = (donationTime - sessionTime) / 1000; // in seconds
-                            // Donation must be AFTER session (positive diff) and within expiry window
-                            const timeMatch = timeDiff > 0 && donationTime < expiryTime;
+
+                            // More lenient time matching: allow donations within the expiry window
+                            // Even if slightly before session time (to handle clock skew)
+                            const timeMatch = donationTime < expiryTime && timeDiff > -300; // Allow 5 min before
+
+                            console.log('🔍 Donation matching check:', {
+                                latestId: latest.id,
+                                lastIdRef: lastIdRef.current,
+                                donationAmount,
+                                sessionAmount,
+                                amountMatch,
+                                donationTime: new Date(donationTime).toISOString(),
+                                sessionTime: new Date(sessionTime).toISOString(),
+                                expiryTime: new Date(expiryTime).toISOString(),
+                                timeDiff,
+                                timeMatch,
+                                willTrigger: latest.id > lastIdRef.current && amountMatch && timeMatch
+                            });
 
                             // If this is the first load, just set the reference ID
                             if (lastIdRef.current === 0) {
                                 lastIdRef.current = latest.id;
+                                console.log('📌 First load, set lastIdRef to:', latest.id);
                                 return;
                             }
 
                             // Check for new donations that match our session
                             if (latest.id > lastIdRef.current && amountMatch && timeMatch) {
-                                console.log('New donation detected for this session!', latest);
+                                console.log('✅ New donation detected for this session!', latest);
 
                                 // Enrich with session data
                                 const enrichedDonation = {
                                     ...latest,
                                     donorName: session.donorName,
-                                    message: session.donorMessage
+                                    message: session.donorMessage,
+                                    gifUrl: session.gifUrl
                                 };
 
                                 setNewDonation(enrichedDonation);
                                 playSuccessSound();
                                 lastIdRef.current = latest.id;
 
-                                // Save metadata for persistence
-                                if (session.donorName || session.donorMessage) {
+                                // Save metadata for persistence via API
+                                if (session.donorName || session.donorMessage || session.gifUrl) {
+                                    // Update local state immediately (Optimistic UI)
                                     const newMetadata = {
                                         ...metadata,
                                         [latest.id]: {
                                             donorName: session.donorName,
-                                            message: session.donorMessage
+                                            message: session.donorMessage,
+                                            gifUrl: session.gifUrl
                                         }
                                     };
                                     localStorage.setItem('donation_metadata', JSON.stringify(newMetadata));
 
-                                    // Update state immediately to reflect changes without waiting for next poll
                                     setDonations(prev => prev.map(d => d.id === latest.id ? enrichedDonation : d));
+
+                                    // Persist to Backend (SQL)
+                                    fetch('https://notification-listener-backend.endri-susanto.workers.dev/public/donations', {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            id: latest.id,
+                                            donorName: session.donorName,
+                                            message: session.donorMessage,
+                                            gifUrl: session.gifUrl
+                                        })
+                                    }).catch(err => console.error('Failed to persist donation metadata:', err));
                                 }
 
                                 // Clear session after successful match
                                 localStorage.removeItem('qris_session');
 
-                                // Auto hide after 8 seconds
-                                setTimeout(() => setNewDonation(null), 8000);
+                                // Removed auto-hide
                             } else if (latest.id > lastIdRef.current) {
                                 // Update lastId even if it doesn't match (to avoid re-checking)
                                 lastIdRef.current = latest.id;
@@ -147,11 +185,17 @@ export const useRecentDonations = () => {
         playSuccessSound();
     };
 
+    const resetTracking = () => {
+        console.log('🔄 Resetting donation tracking for new QR generation');
+        lastIdRef.current = 0;
+    };
+
     return {
         donations,
         loading,
         newDonation,
         setNewDonation,
-        triggerTestDonation
+        triggerTestDonation,
+        resetTracking
     };
 };

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Cog6ToothIcon, ArrowDownTrayIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, ArrowDownTrayIcon, ShareIcon, GifIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { generateDynamicQRIS, formatRupiah } from './utils/qris';
 import { QRISConfig, PRESET_AMOUNTS, MIN_DONATION } from './types';
 import { SettingsModal } from './components/SettingsModal';
 import RecentDonations from './components/RecentDonations';
 import DonationPopup from './components/DonationPopup';
+import GifPicker from './components/GifPicker';
 import { useRecentDonations } from './hooks/useRecentDonations';
 import { DEFAULT_QRIS_PAYLOAD } from './constants';
 
@@ -13,15 +14,25 @@ const App: React.FC = () => {
   const [amount, setAmount] = useState<number | ''>(50000);
   const [donorName, setDonorName] = useState<string>('');
   const [donorMessage, setDonorMessage] = useState<string>('');
+  const [selectedGif, setSelectedGif] = useState<string>('');
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const [qrisConfig, setQrisConfig] = useState<QRISConfig | null>(null);
   const [generatedQR, setGeneratedQR] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [qrExpiresAt, setQrExpiresAt] = useState<Date | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const { donations, loading, newDonation, setNewDonation, triggerTestDonation } = useRecentDonations();
+  const { donations, loading, newDonation, setNewDonation, triggerTestDonation, resetTracking } = useRecentDonations();
+
+  useEffect(() => {
+    if (newDonation) {
+      console.log('🎉 New donation detected, showing popup:', newDonation);
+      setShowSuccessPopup(true);
+    }
+  }, [newDonation]);
 
 
   // Load config from local storage on mount
@@ -80,13 +91,24 @@ const App: React.FC = () => {
     // Create session data for transaction matching
     const generatedAt = new Date();
     const expiresAt = new Date(generatedAt.getTime() + 10 * 60 * 1000); // 10 minutes
+
+    console.log('📝 Creating QR session:', {
+      generatedAt: generatedAt.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      amount: numAmount
+    });
+
     const sessionData = {
       amount: numAmount,
       generatedAt: generatedAt.toISOString(),
       expiresAt: expiresAt.toISOString(),
       donorName,
-      donorMessage
+      donorMessage,
+      gifUrl: selectedGif
     };
+
+    // Reset tracking to allow detection of new donations
+    resetTracking();
 
     localStorage.setItem('qris_session', JSON.stringify(sessionData));
     setQrExpiresAt(expiresAt);
@@ -262,10 +284,16 @@ const App: React.FC = () => {
                 <span className="text-gray-400 font-bold text-xl">Rp</span>
               </div>
               <input
-                type="number"
-                min={MIN_DONATION}
-                value={amount}
-                onChange={(e) => handleAmountChange(e.target.value === '' ? '' : parseInt(e.target.value))}
+                type="text"
+                value={amount === '' ? '' : amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\./g, ''); // Remove dots
+                  if (value === '') {
+                    handleAmountChange('');
+                  } else if (/^\d+$/.test(value)) {
+                    handleAmountChange(parseInt(value));
+                  }
+                }}
                 className="block w-full pl-14 pr-4 py-5 text-3xl font-bold text-gray-900 bg-gray-50 border-2 border-transparent focus:border-blue-500 rounded-2xl focus:ring-0 outline-none transition-all placeholder-gray-300"
                 placeholder="0"
               />
@@ -311,6 +339,36 @@ const App: React.FC = () => {
                 maxLength={200}
               />
             </div>
+
+            {/* GIF Picker */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">GIF <span className="text-gray-400 font-normal">(Opsional)</span></label>
+
+              {selectedGif ? (
+                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-50">
+                  <img
+                    src={selectedGif}
+                    alt="Selected GIF"
+                    className="w-full h-auto max-h-80 object-contain"
+                  />
+                  <button
+                    onClick={() => setSelectedGif('')}
+                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowGifPicker(true)}
+                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-dashed border-purple-200 rounded-xl hover:border-purple-400 transition-all flex items-center justify-center gap-2 text-purple-600 font-medium"
+                >
+                  <GifIcon className="h-5 w-5" />
+                  Pilih GIF
+                </button>
+              )}
+            </div>
           </div>
 
           <button
@@ -343,7 +401,7 @@ const App: React.FC = () => {
               <img src="/favicon.png" alt="Logo" className="w-8 h-8 object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-gray-900">QRIS Generator</h1>
+              <h1 className="text-xl font-bold tracking-tight text-gray-900">Endri Susanto</h1>
               <p className="text-xs text-gray-500 font-medium">Saweran & Donasi</p>
             </div>
           </div>
@@ -393,10 +451,22 @@ const App: React.FC = () => {
       <DonationPopup
         donation={newDonation}
         onClose={() => {
+          setShowSuccessPopup(false);
           setNewDonation(null);
           setGeneratedQR(null); // Reset to new donation form
+          setDonorName('');
+          setDonorMessage('');
+          setSelectedGif('');
+          setAmount('');
         }}
       />
+
+      {showGifPicker && (
+        <GifPicker
+          onSelect={(gifUrl) => setSelectedGif(gifUrl)}
+          onClose={() => setShowGifPicker(false)}
+        />
+      )}
     </div>
   );
 };

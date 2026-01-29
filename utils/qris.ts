@@ -56,42 +56,42 @@ export function generateDynamicQRIS(baseQRIS: string, amount: number): string {
   // Regex to find Tag 54: 54 + length (2 digits) + value
   // This is tricky with Regex. Let's do a simple replace if found, 
   // or rebuild the string excluding 54.
-  
+
   // Robust method: Loop through tags.
   let index = 0;
   let newQrisParts: string[] = [];
-  
+
   while (index < qris.length) {
     const id = qris.substr(index, 2);
     const lengthStr = qris.substr(index + 2, 2);
     const length = parseInt(lengthStr, 10);
-    
+
     if (isNaN(length)) break; // Malformed
 
     const value = qris.substr(index + 4, length);
-    
+
     // Logic:
     // If ID is 01 (Point of Initiation), we force it to '12' (Dynamic)? 
     // Most static QRIS use '11'. Some parsers might reject if it's '11' but has amount.
     // However, many simple generators just leave it. Let's try to set to '12' just in case,
     // or keep original if user prefers. To be safe, let's keep original unless it causes issues.
     // Re: wimboro/qris, it often changes 01 to 12.
-    
+
     if (id === '54') {
       // Skip existing amount
     } else if (id === '63') {
       // Skip existing CRC (should be handled before, but good safety)
     } else {
-       if (id === '01') {
-          // Optional: Force Dynamic. 
-          // newQrisParts.push("010212"); 
-          // But let's stick to passing through original for compatibility unless we know for sure.
-          newQrisParts.push(id + lengthStr + value);
-       } else {
-          newQrisParts.push(id + lengthStr + value);
-       }
+      if (id === '01') {
+        // Optional: Force Dynamic. 
+        // newQrisParts.push("010212"); 
+        // But let's stick to passing through original for compatibility unless we know for sure.
+        newQrisParts.push(id + lengthStr + value);
+      } else {
+        newQrisParts.push(id + lengthStr + value);
+      }
     }
-    
+
     index += 4 + length;
   }
 
@@ -110,15 +110,11 @@ export function generateDynamicQRIS(baseQRIS: string, amount: number): string {
   // 7. Calculate CRC
   cleanQris += "6304"; // Append Tag ID and Length for CRC
   const crc = crc16(cleanQris);
-  
+
   return cleanQris + crc;
 }
 
 export function formatRupiah(amount: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+  // Format with dot separator: Rp 1.000.000
+  return 'Rp ' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }

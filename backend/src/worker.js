@@ -89,6 +89,8 @@ async function handleRequest(request, env) {
       case '/public/donations':
         if (method === 'GET') {
           response = await handleGetPublicDonations(request, env);
+        } else if (method === 'PUT') {
+          response = await handleUpdateDonation(request, env);
         } else {
           response = createJsonResponse({ success: false, error: 'Method not allowed' }, 405, corsHeaders);
         }
@@ -133,6 +135,8 @@ async function initializeTables(db) {
         notification_id INTEGER,
         amount_detected TEXT,
         extras TEXT,
+        donor_name TEXT,
+        message TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
@@ -146,6 +150,19 @@ async function initializeTables(db) {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
+
+    // Attempt to add columns to existing table
+    try {
+      await db.prepare('ALTER TABLE notifications ADD COLUMN donor_name TEXT').run();
+    } catch (e) { /* ignore if already exists */ }
+
+    try {
+      await db.prepare('ALTER TABLE notifications ADD COLUMN message TEXT').run();
+    } catch (e) { /* ignore if already exists */ }
+
+    try {
+      await db.prepare('ALTER TABLE notifications ADD COLUMN gif_url TEXT').run();
+    } catch (e) { /* ignore if already exists */ }
   } catch (error) {
     console.error('Error creating tables:', error);
   }
@@ -218,8 +235,8 @@ async function handleWebhook(request, env) {
       const result = await env.DB.prepare(`
         INSERT INTO notifications (
           device_id, package_name, app_name, posted_at, title, text,
-          sub_text, big_text, channel_id, notification_id, amount_detected, extras
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          sub_text, big_text, channel_id, notification_id, amount_detected, extras, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
         deviceId || null,
         packageName || null,
@@ -232,7 +249,8 @@ async function handleWebhook(request, env) {
         channelId || null,
         notificationId || null,
         amountDetected || null,
-        extras ? JSON.stringify(extras) : null
+        extras ? JSON.stringify(extras) : null,
+        postedAt || timestamp  // Use postedAt for created_at, fallback to current timestamp
       ).run();
 
       console.log('Notification inserted successfully with ID:', result.meta?.last_row_id);
@@ -393,7 +411,11 @@ async function handleGetPublicDonations(request, env) {
         title, 
         text, 
         amount_detected, 
-        created_at 
+        created_at,
+        created_at,
+        donor_name as donorName,
+        message,
+        gif_url as gifUrl
       FROM notifications 
       WHERE amount_detected IS NOT NULL AND amount_detected != ''
       ORDER BY created_at DESC 
@@ -412,6 +434,37 @@ async function handleGetPublicDonations(request, env) {
     return createJsonResponse({
       success: false,
       error: 'Database error'
+    }, 500);
+  }
+}
+
+async function handleUpdateDonation(request, env) {
+  try {
+    const body = await request.json();
+    const { id, donorName, message, gifUrl } = body;
+
+    console.log('Updating donation metadata:', { id, donorName, message, gifUrl });
+
+    if (!id) {
+      return createJsonResponse({ success: false, error: 'Missing donation ID' }, 400);
+    }
+
+    await env.DB.prepare(`
+            UPDATE notifications 
+            SET donor_name = ?, message = ?, gif_url = ?
+            WHERE id = ?
+        `).bind(donorName || null, message || null, gifUrl || null, id).run();
+
+    return createJsonResponse({
+      success: true,
+      message: 'Donation updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Update donation error:', error);
+    return createJsonResponse({
+      success: false,
+      error: 'Failed to update donation: ' + error.message
     }, 500);
   }
 }

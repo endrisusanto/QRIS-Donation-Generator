@@ -21,4 +21,5 @@ export interface Donation {
   created_at: string;
   donorName?: string;
   message?: string;
+  gifUrl?: string;
 }
